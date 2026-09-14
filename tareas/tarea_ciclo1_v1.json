@@ -1,0 +1,13 @@
+{
+  "tarea_codigo": "TAREA-CICLO1",
+  "tarea_version": "v1",
+  "ciclo_numero": 1,
+  "enunciado": "Un tanque se está llenando de agua. La altura h(t), en metros, en función del tiempo t (en minutos) está dada por h(t) = 0.5t^2 + 2t. a) Calcule h'(3). b) Explique qué representa ese valor en el contexto del llenado del tanque, incluyendo signo, magnitud y unidades. c) Si el operario debe decidir si abrir o cerrar una válvula adicional a los 3 minutos, ¿qué le recomendaría con base en h'(3)?",
+  "tipo_respuesta_esperada": "texto",
+  "matriz_version_referencia": "v1",
+  "indicadores_observables_por_tarea": [
+    {"codigo_indicador": "D1-A-01", "justificacion": "el literal a) permite ver si solo calcula sin interpretar"},
+    {"codigo_indicador": "D1-O-01", "justificacion": "el literal b) exige signo+magnitud+unidades+punto"},
+    {"codigo_indicador": "D12-E-01", "justificacion": "el literal c) exige predicción/decisión basada en el signo de la derivada"}
+  ]
+}

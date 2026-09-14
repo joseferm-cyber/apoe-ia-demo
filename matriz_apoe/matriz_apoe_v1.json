@@ -1,0 +1,54 @@
+{
+  "matriz_version": "v1",
+  "fecha_publicacion": "2026-09-12",
+  "constructo": "Comprensión conceptual de la derivada como razón de cambio (marco APOE)",
+  "niveles": [
+    {"codigo_nivel": "A",   "nombre_nivel": "Acción",  "descripcion": "Cálculo o identificación mecánica, sin interpretación variacional ni contextual."},
+    {"codigo_nivel": "P",   "nombre_nivel": "Proceso", "descripcion": "Reconoce y describe la variación local de forma cualitativa; integración aún inestable."},
+    {"codigo_nivel": "O",   "nombre_nivel": "Objeto",  "descripcion": "Interpreta la derivada como razón instantánea situada: signo + magnitud + unidades + punto."},
+    {"codigo_nivel": "E",   "nombre_nivel": "Esquema", "descripcion": "Compara, predice, decide, transfiere o coordina lo local con lo global."},
+    {"codigo_nivel": "SEC", "nombre_nivel": "Sin evidencia clasificable", "descripcion": "Respuesta en blanco, irrelevante o insuficiente. Categoría metodológica, no un nivel cognitivo."}
+  ],
+  "dimensiones": [
+    {"codigo_dimension": "D1",  "nombre_dimension": "Razón de cambio instantánea"},
+    {"codigo_dimension": "D2",  "nombre_dimension": "Variación local"},
+    {"codigo_dimension": "D3",  "nombre_dimension": "Razón promedio vs. instantánea"},
+    {"codigo_dimension": "D4",  "nombre_dimension": "Signo"},
+    {"codigo_dimension": "D5",  "nombre_dimension": "Magnitud"},
+    {"codigo_dimension": "D6",  "nombre_dimension": "Unidades"},
+    {"codigo_dimension": "D7",  "nombre_dimension": "Punto de interpretación"},
+    {"codigo_dimension": "D8",  "nombre_dimension": "Relación gráfica pendiente/tangente"},
+    {"codigo_dimension": "D9",  "nombre_dimension": "Relación simbólica"},
+    {"codigo_dimension": "D10", "nombre_dimension": "Lenguaje contextual"},
+    {"codigo_dimension": "D11", "nombre_dimension": "Comparación entre tasas"},
+    {"codigo_dimension": "D12", "nombre_dimension": "Predicción y toma de decisiones"},
+    {"codigo_dimension": "D13", "nombre_dimension": "Transferencia y coordinación entre lo puntual y lo global"}
+  ],
+  "_nota_indicadores": "Cada indicador se identifica con codigo_indicador = <dimension>-<nivel>-<consecutivo>, ej. D1-O-01. Completar/editar esta lista con el banco definitivo de indicadores observables validado por el comité; la estructura de cada entrada es obligatoria para que el pipeline funcione.",
+  "indicadores": [
+    {
+      "codigo_indicador": "D1-A-01",
+      "codigo_dimension": "D1",
+      "codigo_nivel": "A",
+      "descripcion_indicador": "Calcula la derivada en un punto sin referirse a lo que representa.",
+      "criterio_interpretacion": "Presente si solo hay sustitución numérica/simbólica sin frase interpretativa.",
+      "validacion": {"pertinencia_1_4": null, "claridad_1_4": null, "suficiencia_1_4": null, "v_aiken": null, "comentario_experto": "PENDIENTE: completar con panel de expertos del comité."}
+    },
+    {
+      "codigo_indicador": "D1-O-01",
+      "codigo_dimension": "D1",
+      "codigo_nivel": "O",
+      "descripcion_indicador": "Interpreta el valor de la derivada como una razón de cambio instantánea en un punto específico, con signo y magnitud.",
+      "criterio_interpretacion": "Presente si menciona explícitamente 'en ese instante/punto' junto con signo y magnitud.",
+      "validacion": {"pertinencia_1_4": null, "claridad_1_4": null, "suficiencia_1_4": null, "v_aiken": null, "comentario_experto": "PENDIENTE"}
+    },
+    {
+      "codigo_indicador": "D12-E-01",
+      "codigo_dimension": "D12",
+      "codigo_nivel": "E",
+      "descripcion_indicador": "Usa el signo y la tendencia de la derivada para predecir comportamiento futuro y justificar una decisión.",
+      "criterio_interpretacion": "Presente si formula una predicción condicionada explícitamente al signo/magnitud de la derivada.",
+      "validacion": {"pertinencia_1_4": null, "claridad_1_4": null, "suficiencia_1_4": null, "v_aiken": null, "comentario_experto": "PENDIENTE"}
+    }
+  ]
+}

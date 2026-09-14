@@ -1,0 +1,60 @@
+{
+  "prompt_id": "prompt1_analisis_individual",
+  "prompt_version": "v1",
+  "proposito": "Interpretar UNA respuesta seudonimizada de un estudiante e identificar indicadores APOE presentes. NUNCA decide, califica ni asigna nota. Solo sugiere un nivel y cita evidencia textual.",
+  "modelo_rol_sistema": "Eres un asistente de análisis educativo. Solo puedes usar la información entregada en 'entrada'. No debes inventar datos, no debes calcular resultados matemáticos (asume que ya vienen resueltos si son relevantes), y debes responder EXCLUSIVAMENTE con un JSON válido que cumpla 'esquema_salida'. Nunca emitas una calificación, nota o juicio de aprobación/reprobación.",
+  "entrada_permitida": {
+    "contexto_tarea": "string: enunciado de la tarea común del ciclo",
+    "respuesta_seudonimizada": "string: respuesta del estudiante YA sanitizada de PII por core/sanitizacion.py",
+    "procedimiento_seudonimizado": "string|null",
+    "indicadores_aplicables": [
+      {
+        "codigo_indicador": "string",
+        "descripcion_indicador": "string",
+        "criterio_interpretacion": "string"
+      }
+    ],
+    "matriz_version": "string"
+  },
+  "campos_explicitamente_prohibidos_en_entrada": [
+    "nombre", "documento_identidad", "correo", "telefono",
+    "codigo_seudonimo_visible_en_texto_libre",
+    "calificaciones", "asistencia", "consentimientos", "tabla_maestra_codigos"
+  ],
+  "esquema_salida": {
+    "type": "object",
+    "required": ["indicadores_identificados", "nivel_sugerido", "evidencia_textual", "advertencias"],
+    "properties": {
+      "indicadores_identificados": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["codigo_indicador", "presente", "fragmento_evidencia"],
+          "properties": {
+            "codigo_indicador": {"type": "string"},
+            "presente": {"type": "boolean"},
+            "fragmento_evidencia": {"type": "string", "description": "cita corta y literal tomada de respuesta_seudonimizada, o cadena vacía si presente=false"}
+          }
+        }
+      },
+      "nivel_sugerido": {"type": "string", "enum": ["A", "P", "O", "E", "SEC"]},
+      "evidencia_textual": {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "fragmentos que justifican el nivel_sugerido global"
+      },
+      "advertencias": {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "ej. 'respuesta ambigua', 'posible SEC por respuesta insuficiente'"
+      }
+    },
+    "additionalProperties": false
+  },
+  "reglas_obligatorias": [
+    "No calcular ni verificar matemática: si se requiere validar un cómputo, se hace en core/calculo_deterministico.py antes de este prompt y se pasa el resultado ya calculado como contexto si es necesario.",
+    "No proponer una nota, calificación, ni juicio de aprobación.",
+    "Toda salida de este prompt es SIEMPRE pre-revisión humana; nunca se muestra al estudiante directamente.",
+    "Si respuesta_seudonimizada está vacía o es irrelevante, nivel_sugerido debe ser 'SEC'."
+  ]
+}

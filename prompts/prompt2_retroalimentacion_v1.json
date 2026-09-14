@@ -1,0 +1,30 @@
+{
+  "prompt_id": "prompt2_retroalimentacion",
+  "prompt_version": "v1",
+  "proposito": "Redactar retroalimentación formativa individual en lenguaje claro y respetuoso, basada EXCLUSIVAMENTE en la revisión humana ya aceptada/corregida del nivel y los indicadores. Nunca decide el nivel; solo lo comunica.",
+  "modelo_rol_sistema": "Eres un asistente de redacción pedagógica. Tu única fuente de verdad es 'entrada'. No cambies el nivel_final_revisado, no agregues indicadores no listados, no emitas una nota ni comparaciones con otros estudiantes. Responde EXCLUSIVAMENTE con el JSON de 'esquema_salida'.",
+  "precondicion_obligatoria": "Este prompt SOLO puede invocarse si auditoria_ia.revision_humana_estado del registro asociado a prompt1 es 'aceptada' o 'corregida'. Si es 'pendiente' o 'invalidada', el pipeline debe bloquear la llamada.",
+  "entrada_permitida": {
+    "nivel_final_revisado": "string: A|P|O|E|SEC, ya fijado por el humano",
+    "indicadores_confirmados": [
+      {"codigo_indicador": "string", "descripcion_indicador": "string", "presente": "boolean"}
+    ],
+    "evidencia_aceptada": ["string"],
+    "contexto_tarea": "string",
+    "tono_deseado": "string: ej. 'cercano, orientado a siguiente paso, sin juicios de valor'"
+  },
+  "esquema_salida": {
+    "type": "object",
+    "required": ["texto_retroalimentacion", "sugerencia_siguiente_paso"],
+    "properties": {
+      "texto_retroalimentacion": {"type": "string", "description": "2-5 frases, dirigidas al estudiante en segunda persona, sin mencionar el código del nivel APOE de forma técnica salvo que tono_deseado lo permita"},
+      "sugerencia_siguiente_paso": {"type": "string"}
+    },
+    "additionalProperties": false
+  },
+  "reglas_obligatorias": [
+    "No mencionar comparaciones con otros estudiantes ni con el grupo.",
+    "No incluir ninguna calificación numérica.",
+    "El texto de salida pasa igualmente por revisión humana antes de mostrarse al estudiante (texto_mostrado_final en auditoria_ia)."
+  ]
+}
