@@ -77,6 +77,9 @@ st.sidebar.title("APOE-IA")
 st.sidebar.caption("Sistema de seguimiento formativo — no es plataforma de calificación.")
 rol_actual = st.sidebar.selectbox("Rol de sesión", ["investigador_principal", "director_revisor"])
 
+st.sidebar.caption(f"🔧 Diagnóstico: APOE_MODO_DEMO={os.environ.get('APOE_MODO_DEMO')!r} | "
+                    f"Proveedor activo={pipeline.ai_client.obtener_proveedor_activo().nombre_proveedor}")
+
 if MODO_DEMO:
     st.sidebar.divider()
     st.sidebar.caption("Demo: la base arranca vacía. Carga datos de ejemplo antes de capturar respuestas.")
