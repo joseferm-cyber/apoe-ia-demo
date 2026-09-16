@@ -17,10 +17,38 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import streamlit as st
-from core import db_research, pipeline
+from core import db_research, db_protected, pipeline
 from core.pipeline import ContextoCiclo
 
 st.set_page_config(page_title="APOE-IA · Seguimiento formativo de la derivada", layout="wide")
+
+MODO_DEMO = os.environ.get("APOE_MODO_DEMO") == "1"
+
+
+def _inicializar_bases_si_no_existen():
+    """
+    En despliegues con disco efímero (ej. Streamlit Community Cloud), la
+    base SQLite se pierde en cada reinicio/redeploy, y además el archivo
+    puede quedar creado (vacío) por una conexión previa sin que el
+    esquema llegara a aplicarse. Por eso NO nos basamos en si el archivo
+    existe: siempre ejecutamos el DDL, que usa `CREATE TABLE IF NOT
+    EXISTS` en cada sentencia, así que repetirlo es seguro (idempotente)
+    y garantiza que las tablas queden creadas sin importar el estado
+    previo del archivo.
+    NO usar este patrón en producción con datos reales: allí las bases
+    deben inicializarse una sola vez, de forma controlada, en instancias
+    persistentes y separadas (ver README y docs/).
+    """
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    db_research.inicializar_esquema(os.path.join(base_dir, "db", "ddl_research_sqlite.sql"))
+    db_protected.inicializar_esquema(os.path.join(base_dir, "db", "ddl_protected_sqlite.sql"))
+
+
+_inicializar_bases_si_no_existen()
+
+if MODO_DEMO:
+    st.warning("⚠️ MODO DEMO — datos ficticios y proveedor de IA simulado (ProveedorDemoFicticio). "
+               "No usar esta instancia con datos reales de estudiantes.")
 
 
 def cargar_contrato(nombre_archivo: str) -> dict:
