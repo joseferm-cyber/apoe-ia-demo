@@ -61,9 +61,62 @@ PROMPT1 = cargar_contrato("prompt1_analisis_individual_v1.json")
 PROMPT2 = cargar_contrato("prompt2_retroalimentacion_v1.json")
 PROMPT3 = cargar_contrato("prompt3_agregacion_grupal_v1.json")
 
+
+def cargar_indicadores_matriz(matriz_version: str = "v1") -> list:
+    ruta = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         "matriz_apoe", f"matriz_apoe_{matriz_version}.json")
+    with open(ruta, "r", encoding="utf-8") as f:
+        matriz = json.load(f)
+    return [
+        {"codigo_indicador": ind["codigo_indicador"], "descripcion_indicador": ind["descripcion_indicador"],
+         "criterio_interpretacion": ind["criterio_interpretacion"]}
+        for ind in matriz.get("indicadores", [])
+    ]
+
 st.sidebar.title("APOE-IA")
 st.sidebar.caption("Sistema de seguimiento formativo — no es plataforma de calificación.")
 rol_actual = st.sidebar.selectbox("Rol de sesión", ["investigador_principal", "director_revisor"])
+
+if MODO_DEMO:
+    st.sidebar.divider()
+    st.sidebar.caption("Demo: la base arranca vacía. Carga datos de ejemplo antes de capturar respuestas.")
+    if st.sidebar.button("🌱 Cargar datos de ejemplo (demo)"):
+        with db_research.conexion() as conn:
+            conn.execute(
+                "INSERT OR IGNORE INTO matriz_apoe_version (matriz_version, fuente_archivo, hash_contenido) "
+                "VALUES ('v1', 'matriz_apoe/matriz_apoe_v1.json', 'demo')"
+            )
+            conn.execute(
+                "INSERT OR IGNORE INTO tarea (tarea_codigo, tarea_version, ciclo_id, enunciado, tipo_respuesta_esperada) "
+                "VALUES ('TAREA-CICLO1', 'v1', 1, "
+                "'Un tanque se llena según h(t)=0.5t^2+2t. Calcule h prima(3) e interprete signo, magnitud y unidades.', "
+                "'texto')"
+            )
+            fila_tarea = conn.execute(
+                "SELECT tarea_id FROM tarea WHERE tarea_codigo='TAREA-CICLO1' AND tarea_version='v1'"
+            ).fetchone()
+            tarea_id_demo = fila_tarea["tarea_id"]
+            conn.execute(
+                "INSERT OR IGNORE INTO ciclo (numero_ciclo, fecha_inicio, matriz_version_usada, tarea_id_usada, "
+                "prompt1_version, prompt2_version, prompt3_version) VALUES (1, date('now'), 'v1', ?, 'v1', 'v1', 'v1')",
+                (tarea_id_demo,),
+            )
+            conn.execute(
+                "INSERT OR IGNORE INTO participantes_seudonimos (codigo_seudonimo, grupo_curso, opt_out_ia) "
+                "VALUES ('MI1A-001', 'demo-2026', 0)"
+            )
+        with db_protected.conexion() as conn:
+            conn.execute(
+                "INSERT OR IGNORE INTO tabla_maestra_codigos (codigo_seudonimo, nombre_completo, documento_identidad, "
+                "mayor_de_edad, responsable_asignacion) VALUES ('MI1A-001', 'Estudiante Demo', '0000000001', 1, 'demo')"
+            )
+            conn.execute(
+                "INSERT OR IGNORE INTO consentimiento (codigo_seudonimo, version_formato_consentimiento, fecha_firma, "
+                "acepta_participacion, acepta_procesamiento_ia, documento_firmado_ruta) "
+                "VALUES ('MI1A-001', 'v1', date('now'), 1, 1, '/demo/consentimiento.pdf')"
+            )
+        st.sidebar.success("Datos de ejemplo cargados: ciclo 1, tarea 1, participante MI1A-001 (consiente IA).")
+
 vista = st.sidebar.radio(
     "Vista",
     [
@@ -90,6 +143,7 @@ if vista == "1. Captura de respuesta":
         codigo = st.text_input("Código seudónimo (ej. MI1A-001)")
         ciclo_id = st.number_input("ID de ciclo", min_value=1, step=1)
         tarea_id = st.number_input("ID de tarea", min_value=1, step=1)
+        contexto_tarea_captura = st.text_area("Contexto de la tarea (enunciado, para el análisis de IA)")
         contenido = st.text_area("Respuesta del estudiante (texto)")
         procedimiento = st.text_area("Procedimiento (opcional)")
         tiempo = st.number_input("Tiempo empleado (segundos)", min_value=0, step=1)
@@ -117,6 +171,22 @@ if vista == "1. Captura de respuesta":
                     if resultado["canal"] == "manual_opt_out":
                         st.info("Este participante tiene opt-out de IA: debe procesarse por revisión docente manual, "
                                 "sin pasar por el pipeline de IA generativa.")
+                    else:
+                        try:
+                            analisis = pipeline.paso_2_a_3_analisis_ia(
+                                respuesta_id=resultado["respuesta_id"], ctx=ctx,
+                                contexto_tarea=contexto_tarea_captura or "(sin contexto de tarea provisto)",
+                                respuesta_seudonimizada=contenido,
+                                procedimiento_seudonimizado=procedimiento or None,
+                                indicadores_aplicables=cargar_indicadores_matriz("v1"),
+                            )
+                            st.info(f"Análisis de IA generado — auditoria_id={analisis['auditoria_id']} "
+                                    "(pendiente de revisión humana, ver vista 2).")
+                            st.json(analisis["salida_ia"])
+                        except NotImplementedError as e:
+                            st.warning(f"No se pudo ejecutar el análisis de IA: {e}")
+                        except Exception as e:
+                            st.error(f"Error al ejecutar el análisis de IA: {e}")
                 else:
                     st.warning(f"No se pudo registrar automáticamente: {resultado['motivo']}. "
                                "Requiere revisión manual de posible PII antes de continuar.")
